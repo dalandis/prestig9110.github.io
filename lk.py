@@ -1,14 +1,17 @@
-from flask import Blueprint, render_template, g
+from flask import Blueprint, render_template, g, jsonify
 from flask_discord import requires_authorization
 from hello import get_db, defaultParams, app, oauth
+# import json
 
 lk = Blueprint('lk', __name__, template_folder='templates')
 
-@lk.route("/me/")
-@requires_authorization
+@lk.route("/api/me/")
 def me():
     get_db()
     defaultParams()
+
+    if not g.params['auth_ok']:
+        return jsonify( { "error": "not auth", "status_code": 401} ), 401
     # перенести на клиент
     # пока такой костыль что бы как минимум не падало с 500
     try:
@@ -23,10 +26,8 @@ def me():
             gmg_ok = 1
 
     g.cursor.execute("SELECT id, username, tag, status FROM users WHERE user_id = %s", ( str(g.user.id), ))
-    user_id = g.cursor.fetchone()
+    user = g.cursor.fetchone()
 
-    users = []
-    all_markers = []
     opUser = 0
     
     if str(g.user.id) in app.config["PERMISSIONS"]:
@@ -35,14 +36,23 @@ def me():
     g.cursor.execute("SELECT * FROM markers WHERE user = '" + str(g.user.id) + "'")
     markers = g.cursor.fetchall()
 
-    return render_template(
-        'profile/me.html', 
-        params  = g.params,
-        gmg_ok  = gmg_ok,  
-        user_id = user_id, 
-        users   = users, 
-        markers = markers, 
-        opUser  = opUser,
-        version = app.config["GAME_VERSION"]
-    )
+    # return render_template(
+    #     'profile/me.html', 
+    #     params  = g.params,
+    #     gmg_ok  = gmg_ok,  
+    #     user_id = user_id, 
+    #     users   = users, 
+    #     markers = markers, 
+    #     opUser  = opUser,
+    #     version = app.config["GAME_VERSION"]
+    # )
+
+    return jsonify( { 
+        "params": g.params,
+        "gmg_ok": gmg_ok,  
+        "user": user, 
+        "markers": markers, 
+        "opUser": opUser,
+        "version": app.config["GAME_VERSION"] 
+    } )
     

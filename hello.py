@@ -17,7 +17,8 @@ import time
 
 app = Flask(__name__)
 
-app._static_folder = 'static'
+app._static_folder = 'gmgame-site/build/static'
+app.template_folder = os.path.abspath('gmgame-site')
 
 app.config.from_pyfile('config.py', silent=True)
 
@@ -113,24 +114,30 @@ def register():
 def index():
     defaultParams()
 
-    return render_template(
-        'index.html', 
-        params = g.params,
-        version = app.config["GAME_VERSION"]
-    )
+    # return render_template(
+    #     'index.html', 
+    #     params = g.params,
+    #     version = app.config["GAME_VERSION"]
+    # )
+    return render_template('build/index.html')
 
-@app.route("/login/")
+@app.route("/login")
 def login():
     return oauth.create_session()
 
 @app.route("/callback/")
 def callback():
     oauth.callback()
-    return redirect(url_for("lk.me"))
+    # return redirect(url_for("lk.me"))
+    return redirect("/me/")
 
 @app.errorhandler(Unauthorized)
 def redirect_unauthorized(e):
     return redirect(url_for("login"))
+
+# @app.route("/redirect_oauth/")
+# def redirect_oauth():
+#     return redirect("http://193.124.206.25:5001/me/")
 
 @app.route('/add_marker', methods=['POST', 'GET'])
 @requires_authorization
@@ -988,6 +995,7 @@ def category():
 
 @app.route("/<page>/")
 def start(page):
+    return render_template('build/index.html')
     template = 'start.html'
 
     if page:

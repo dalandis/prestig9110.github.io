@@ -2,6 +2,7 @@ from hello import mysql, app, oauth, cache
 from flask import g
 from utils import _getTitle
 import requests
+import json
 
 def get_token(refresh):
     if refresh:
@@ -65,7 +66,7 @@ def defaultParams():
 
     g.jwt_token, g.jwt_refresh_token = get_token(refresh=0)
 
-    g.params = {'user': g.user, 'auth_ok': auth_ok, 'categories': resposeCache}
+    g.params = {"user": g.user.to_json(), "auth_ok": auth_ok, "categories": resposeCache}
 
 def getbreadcrumbs(page, **params):
     breadcrumbs = []

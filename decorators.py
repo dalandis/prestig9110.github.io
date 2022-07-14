@@ -25,3 +25,11 @@ def bearer_required(f):
             return jsonify({"error": "Authentication failed", "status_code": 401}), 401
         return f(*args, **kwargs)
     return decorated_function
+
+def protect_route(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if not oauth.authorized:
+            return jsonify({"error": "Authentication not found", "status_code": 401}), 401
+        return f(*args, **kwargs)
+    return decorated_function

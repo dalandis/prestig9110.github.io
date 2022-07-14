@@ -1,17 +1,17 @@
 from flask import Blueprint, render_template, g, jsonify
 from flask_discord import requires_authorization
 from hello import get_db, defaultParams, app, oauth
+from decorators import protect_route
 # import json
 
 lk = Blueprint('lk', __name__, template_folder='templates')
 
+# @lk.route("/me/")
 @lk.route("/api/me/")
+@protect_route
 def me():
     get_db()
     defaultParams()
-
-    if not g.params['auth_ok']:
-        return jsonify( { "error": "not auth", "status_code": 401} ), 401
     # перенести на клиент
     # пока такой костыль что бы как минимум не падало с 500
     try:

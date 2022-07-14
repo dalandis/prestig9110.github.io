@@ -49,10 +49,12 @@ def get_db():
 def defaultParams():
     auth_ok = 0
     g.user = {}
+    user = ''
 
     if oauth.authorized:
         auth_ok = 1
         g.user = oauth.fetch_user()
+        user = g.user.to_json()
 
     resposeCache = cache.get('jhwvfkjwevhfhjwek' if app.config["DEV"] == "true" else 'responseCategory')
 
@@ -66,7 +68,7 @@ def defaultParams():
 
     g.jwt_token, g.jwt_refresh_token = get_token(refresh=0)
 
-    g.params = {"user": g.user.to_json(), "auth_ok": auth_ok, "categories": resposeCache}
+    g.params = {"user": user, "auth_ok": auth_ok, "categories": resposeCache}
 
 def getbreadcrumbs(page, **params):
     breadcrumbs = []

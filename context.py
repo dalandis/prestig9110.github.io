@@ -1,5 +1,5 @@
 from hello import mysql, app, oauth, cache
-from flask import g
+from flask import g, jsonify
 from utils import _getTitle
 import requests
 import json
@@ -88,3 +88,20 @@ def getbreadcrumbs(page, **params):
     #             breadcrumbs.append({"name": category["name_category"], "src": "/category/" + str(params["category"])})
 
     return breadcrumbs
+
+def _sendRequest(url, data):
+    try:
+        response = requests.post(
+            app.config["JWT_URL"] + url, 
+            json = data, 
+            headers = { 'Authorization' : 'Bearer ' + g.jwt_token }
+        )
+    except:
+        return jsonify({'error': 'Какие то неполадки, попробуйте, пожалуйста, позже'})
+
+    if response.status_code == 401:
+        g.jwt_token = get_token(refresh=1)
+
+        return _sendRequest(url, data)
+
+    return response.json()

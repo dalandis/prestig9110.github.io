@@ -19,7 +19,7 @@ def bearer_required(f):
         if "Authorization" in request.headers:
             data = request.headers['Authorization']
             token = str.replace(str(data), 'Bearer ','')
-            if token != app.config["BEARER_SUPERHUB"]:
+            if token != app.config["BEARER_SUPERHUB"] and token != app.config["BEARER_BOT_API"]:
                 return jsonify({"error": "Authentication failed", "status_code": 401}), 401
         else:
             return jsonify({"error": "Authentication failed", "status_code": 401}), 401

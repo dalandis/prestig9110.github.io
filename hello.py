@@ -42,14 +42,16 @@ app.config.from_mapping(config)
 cache = Cache(app)
 
 from decorators import admin_required
-from context import get_db, defaultParams, get_token, getbreadcrumbs
+from context import get_db, defaultParams, getbreadcrumbs, _sendRequest
 from utils import _is_numb, _allowed_file, _getTitle
 from lk import lk
 from api import api
 from registration import create_user
+from botApi import botApi
 
 app.register_blueprint(lk)
 app.register_blueprint(api)
+app.register_blueprint(botApi)
 
 @app.teardown_request
 def teardown_request(response):
@@ -661,23 +663,6 @@ def change_password():
             return jsonify( { 'ok': 'Пароль изменен' } )
 
     return render_template('change_password.html', params = g.params)
-
-def _sendRequest(url, data):
-    try:
-        response = requests.post(
-            app.config["JWT_URL"] + url, 
-            json = data, 
-            headers = { 'Authorization' : 'Bearer ' + g.jwt_token }
-        )
-    except:
-        return jsonify({'error': 'Какие то неполадки, попробуйте, пожалуйста, позже'})
-
-    if response.status_code == 401:
-        g.jwt_token = get_token(refresh=1)
-
-        return _sendRequest(url, data)
-
-    return response.json()
 
 @app.route("/logout")
 @requires_authorization

@@ -14,3 +14,17 @@ def _getTitle(ids):
     for category in resposeCache:
         if int(category["id"]) == int(ids):
             return category["name_category"]
+
+def _getStatus(id):
+    status = "Новый игрок"
+
+    if id == 2:
+        status = "Игрок сервера"
+    if id == 3:
+        status = "Отказано"
+    if id == 4:
+        status = "Забанен"
+    if id == 5:
+        status = "Не в вайтлисте"
+
+    return status

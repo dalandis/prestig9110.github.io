@@ -2,6 +2,7 @@ from flask import Blueprint, render_template, g, jsonify
 from flask_discord import requires_authorization
 from hello import get_db, defaultParams, app, oauth
 from decorators import protect_route
+from utils import _getStatus
 # import json
 
 lk = Blueprint('lk', __name__, template_folder='templates')
@@ -25,7 +26,7 @@ def me():
         if guild['id'] == '723912565234728972':
             gmg_ok = 1
 
-    g.cursor.execute("SELECT id, username, tag, status FROM users WHERE user_id = %s", ( str(g.user.id), ))
+    g.cursor.execute("SELECT id, username, status FROM users WHERE user_id = %s", ( str(g.user.id), ))
     user = g.cursor.fetchone()
 
     opUser = 0
@@ -50,7 +51,8 @@ def me():
     return jsonify( { 
         "params": g.params,
         "gmg_ok": gmg_ok,  
-        "user": user, 
+        "user": user,
+        "discordUser": g.user.to_json(),
         "markers": markers, 
         "opUser": opUser,
         "version": app.config["GAME_VERSION"] 

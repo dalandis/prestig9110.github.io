@@ -72,4 +72,35 @@ def get_markers():
         "count": len(markers)
     } )
 
+@lk.route("/api/get_marker/<marker_id>")
+@protect_route
+def get_marker(marker_id):
+    if not marker_id:
+        return jsonify( { 
+            "marker": {},
+        } )
+    
+    get_db()
+    defaultParams()
+
+    g.cursor.execute("SELECT * FROM markers WHERE user = '" + str(g.user.id) + "' and id = " + marker_id)
+    marker = g.cursor.fetchone()
+
+    worldType = 'over'
+    worldName = 'GMGameWorld - overworld'
+
+    if marker['id_type']=='turquoise' or marker['id_type']=='orange' or marker['id_type']=='lime' or marker['id_type']=='pink' or marker['id_type']=='farm':
+        worldType = 'nether'
+        worldName = 'GMGameWorld-Nether - nether'
+    if marker['id_type']=='end_portals' or marker['id_type']=='pixel_arts':
+        worldType = 'the_end'
+        worldName = 'GMGameWorld-TheEnd - end'
+    
+    marker['world_type'] = worldType
+    marker['world_name'] = worldName
+
+    return jsonify( { 
+        "marker": marker,
+    } )
+
     

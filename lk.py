@@ -34,8 +34,8 @@ def me():
     if str(g.user.id) in app.config["PERMISSIONS"]:
         opUser = 1
 
-    g.cursor.execute("SELECT * FROM markers WHERE user = '" + str(g.user.id) + "'")
-    markers = g.cursor.fetchall()
+    # g.cursor.execute("SELECT * FROM markers WHERE user = '" + str(g.user.id) + "'")
+    # markers = g.cursor.fetchall()
 
     # return render_template(
     #     'profile/me.html', 
@@ -53,8 +53,23 @@ def me():
         "gmg_ok": gmg_ok,  
         "user": user,
         "discordUser": g.user.to_json(),
-        "markers": markers, 
+        # "markers": markers, 
         "opUser": opUser,
         "version": app.config["GAME_VERSION"] 
     } )
+
+@lk.route("/api/get_markers/")
+@protect_route
+def get_markers():
+    get_db()
+    defaultParams()
+
+    g.cursor.execute("SELECT * FROM markers WHERE user = '" + str(g.user.id) + "'")
+    markers = g.cursor.fetchall()
+
+    return jsonify( { 
+        "markers": markers,
+        "count": len(markers)
+    } )
+
     

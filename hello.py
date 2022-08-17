@@ -141,89 +141,89 @@ def redirect_unauthorized(e):
 # def redirect_oauth():
 #     return redirect("http://193.124.206.25:5001/me/")
 
-@app.route('/add_marker', methods=['POST', 'GET'])
-@requires_authorization
-def add_marker():
-    if request.method == 'POST':
-        get_db()
-        defaultParams()
+# @app.route('/add_marker', methods=['POST', 'GET'])
+# @requires_authorization
+# def add_marker():
+#     if request.method == 'POST':
+#         get_db()
+#         defaultParams()
 
-        error = None
+#         error = None
 
-        server      = request.form['server']
-        id_type     = request.form['id_type']
-        name        = request.form['name']
-        x           = request.form['x']
-        y           = request.form['y']
-        z           = request.form['z']
-        description = request.form['description']
+#         server      = request.form['server']
+#         id_type     = request.form['id_type']
+#         name        = request.form['name']
+#         x           = request.form['x']
+#         y           = request.form['y']
+#         z           = request.form['z']
+#         description = request.form['description']
 
-        edit = 0
-        markerID = 0
+#         edit = 0
+#         markerID = 0
 
-        if 'edit' in request.form:
-            edit        = request.form['edit']
-            markerID    = request.form['markerID']
+#         if 'edit' in request.form:
+#             edit        = request.form['edit']
+#             markerID    = request.form['markerID']
 
-        if not server or not id_type or not name or not x or not y or not z:
-            return jsonify( { 'error': 'Не заполнены обязательные поля' } )
+#         if not server or not id_type or not name or not x or not y or not z:
+#             return jsonify( { 'error': 'Не заполнены обязательные поля' } )
 
-        if not _is_numb(x) or not _is_numb(y) or not _is_numb(z):
-            return jsonify( { 'error': 'Координаты могут быть только число' } )
+#         if not _is_numb(x) or not _is_numb(y) or not _is_numb(z):
+#             return jsonify( { 'error': 'Координаты могут быть только число' } )
 
-        if edit:
-            where = ' AND user = "' + str(g.user.id) + '"'
+#         if edit:
+#             where = ' AND user = "' + str(g.user.id) + '"'
 
-            if str(g.user.id) in app.config["PERMISSIONS"]:
-                where = ''
+#             if str(g.user.id) in app.config["PERMISSIONS"]:
+#                 where = ''
 
-            g.cursor.execute( 
-                'UPDATE markers SET id_type = %s, x = %s, y = %s, z = %s, name = %s, description = %s, server = %s, flag = %s WHERE id = %s' + where,
-                    ( id_type, x, y, z, name, description, server, 1, markerID )
-            )  
-        else:
-            g.cursor.execute( 
-                'INSERT INTO markers (id_type, x, y, z, name, description, user, server, flag) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)', 
-                    ( id_type, x, y, z, name, description, str(g.user.id), server, 1)
-            )
+#             g.cursor.execute( 
+#                 'UPDATE markers SET id_type = %s, x = %s, y = %s, z = %s, name = %s, description = %s, server = %s, flag = %s WHERE id = %s' + where,
+#                     ( id_type, x, y, z, name, description, server, 1, markerID )
+#             )  
+#         else:
+#             g.cursor.execute( 
+#                 'INSERT INTO markers (id_type, x, y, z, name, description, user, server, flag) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)', 
+#                     ( id_type, x, y, z, name, description, str(g.user.id), server, 1)
+#             )
 
-        g.conn.commit()
+#         g.conn.commit()
 
-        g.cursor.execute(
-            'INSERT INTO queue (task, status, object) VALUES (%s, %s, %s)',
-                ( 'update', 'new', id_type )
-        )
+#         g.cursor.execute(
+#             'INSERT INTO queue (task, status, object) VALUES (%s, %s, %s)',
+#                 ( 'update', 'new', id_type )
+#         )
         
-        g.conn.commit()
+#         g.conn.commit()
 
-        return jsonify({'success': g.cursor.lastrowid})
+#         return jsonify({'success': g.cursor.lastrowid})
     
-    return jsonify({'error': 'При добавлении метки произошла ошибка'})
+#     return jsonify({'error': 'При добавлении метки произошла ошибка'})
 
-@app.route('/del_marker', methods=['POST', 'GET'])
-@requires_authorization
-def del_marker():
-    if request.method == 'POST':
-        get_db()
-        defaultParams()
+# @app.route('/del_marker', methods=['POST', 'GET'])
+# @requires_authorization
+# def del_marker():
+#     if request.method == 'POST':
+#         get_db()
+#         defaultParams()
 
-        error = None
+#         error = None
 
-        idMarker = request.form['id']
-        allmarkers = request.form['allmarkers'] if 'allmarkers' in request.form else 0
+#         idMarker = request.form['id']
+#         allmarkers = request.form['allmarkers'] if 'allmarkers' in request.form else 0
 
-        if not idMarker:
-            return jsonify( { 'error': 'Нет ID' } )
+#         if not idMarker:
+#             return jsonify( { 'error': 'Нет ID' } )
 
-        where = ' AND user = "' + str(g.user.id) + '"'
+#         where = ' AND user = "' + str(g.user.id) + '"'
 
-        if str(g.user.id) in app.config["PERMISSIONS"] and allmarkers:
-            where = ''
+#         if str(g.user.id) in app.config["PERMISSIONS"] and allmarkers:
+#             where = ''
 
-        g.cursor.execute( 'DELETE FROM markers WHERE id = ' + idMarker + where )  
-        g.conn.commit()
+#         g.cursor.execute( 'DELETE FROM markers WHERE id = ' + idMarker + where )  
+#         g.conn.commit()
 
-        return jsonify({'success': 'Маркер удален'})
+#         return jsonify({'success': 'Маркер удален'})
 
 @app.route("/other_markers/")
 @requires_authorization

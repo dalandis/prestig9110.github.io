@@ -1,8 +1,8 @@
-from flask import Blueprint, render_template, g, jsonify
+from flask import Blueprint, render_template, g, jsonify, request
 from flask_discord import requires_authorization
 from hello import get_db, defaultParams, app, oauth
 from decorators import protect_route
-from utils import _getStatus
+from utils import _getStatus, _is_numb
 # import json
 
 lk = Blueprint('lk', __name__, template_folder='templates')
@@ -75,7 +75,7 @@ def get_markers():
 @lk.route("/api/get_marker/<marker_id>")
 @protect_route
 def get_marker(marker_id):
-    if not marker_id:
+    if marker_id == 'new':
         return jsonify( { 
             "marker": {},
         } )
@@ -103,4 +103,61 @@ def get_marker(marker_id):
         "marker": marker,
     } )
 
+@lk.route("/api/save_edit_markers", methods=['POST'])
+@protect_route
+def save_edit_markers():
+    get_db()
+    defaultParams()
+
+    params = request.get_json()
+
+    server      = params['server']
+    id_type     = params['id_type']
+    name        = params['name']
+    x           = str(params['x'])
+    y           = "64"
+    z           = str(params['z'])
+    description = params['description']
+    markerID    = params['markerID']
+
+    if not server or not id_type or not name or not x or not y or not z:
+        return jsonify( { 'error': 'Не заполнены обязательные поля' } )
+
+    if not _is_numb(x) or not _is_numb(y) or not _is_numb(z):
+        return jsonify( { 'error': 'Координаты могут быть только число' } )
+
+    if markerID == 'new':
+        g.cursor.execute( 
+            'INSERT INTO markers (id_type, x, y, z, name, description, user, server, flag) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)', 
+                ( id_type, x, y, z, name, description, str(g.user.id), server, 1)
+        )
+    else:
+        g.cursor.execute( 
+            'UPDATE markers SET id_type = %s, x = %s, y = %s, z = %s, name = %s, description = %s, server = %s, flag = %s WHERE id = %s AND user = %s',
+                ( id_type, x, y, z, name, description, server, 1, markerID, str(g.user.id) )
+        ) 
     
+    g.cursor.execute(
+        'INSERT INTO queue (task, status, object) VALUES (%s, %s, %s)',
+            ( 'update', 'new', id_type )
+    )
+    
+    g.conn.commit()
+
+    return jsonify({"data": "success"})
+
+@lk.route("/api/delete_markers", methods=['POST'])
+@protect_route
+def delete_markers():
+    get_db()
+    defaultParams()
+
+    params = request.get_json()
+
+    if "markerID" not in params:
+        return jsonify( { 'error': 'Нет ID' } )
+
+    g.cursor.execute( 'DELETE FROM markers WHERE id = %s AND user = %s', (params["markerID"], str(g.user.id)) )  
+    g.conn.commit()
+
+    return jsonify({'data': 'Маркер удален'})

@@ -120,7 +120,7 @@ def save_edit_markers():
     description = params['description']
     markerID    = params['markerID']
 
-    if not server or not id_type or not name or not x or not y or not z:
+    if not server or not id_type or not name or not x or not z or not description:
         return jsonify( { 'error': 'Не заполнены обязательные поля' } )
 
     if not _is_numb(x) or not _is_numb(y) or not _is_numb(z):
@@ -161,3 +161,42 @@ def delete_markers():
     g.conn.commit()
 
     return jsonify({'data': 'Маркер удален'})
+
+@lk.route("/api/get_territories")
+@protect_route
+def get_territories():
+    get_db()
+    defaultParams()
+
+    g.cursor.execute("SELECT * FROM territories WHERE user = '" + str(g.user.id) + "'")
+    territories = g.cursor.fetchall()
+
+    return jsonify( { 
+        "markers": territories,
+        "count": len(territories)
+    } )
+
+@lk.route("/api/get_terr/<terr_id>")
+@protect_route
+def get_terr(terr_id):
+    if terr_id == 'new':
+        return jsonify( { 
+            "territory": {},
+        } )
+    
+    get_db()
+    defaultParams()
+
+    g.cursor.execute("SELECT * FROM territories WHERE id = %s", ( terr_id ) )
+    terr = g.cursor.fetchone()
+
+    worldName = 'GMGameWorld - overworld'
+
+    if terr['world']=='farm':
+        worldName = 'FarmWorld - overworld'
+    
+    terr['world_name'] = worldName
+
+    return jsonify( { 
+        "terr": terr
+    } )

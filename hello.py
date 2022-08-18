@@ -578,16 +578,16 @@ def other_territories():
 
     return render_template('other_territories.html', params = g.params, markers=territories, opUser=1)
 
-@app.route('/territories', methods=['POST', 'GET'])
-@requires_authorization
-def territories():
-    get_db()
-    defaultParams()
+# @app.route('/territories', methods=['POST', 'GET'])
+# @requires_authorization
+# def territories():
+#     get_db()
+#     defaultParams()
 
-    g.cursor.execute("SELECT * FROM territories WHERE user = '" + str(g.user.id) + "'")
-    markers = g.cursor.fetchall()
+#     g.cursor.execute("SELECT * FROM territories WHERE user = '" + str(g.user.id) + "'")
+#     markers = g.cursor.fetchall()
 
-    return render_template('territories.html', params = g.params, markers=markers)
+#     return render_template('territories.html', params = g.params, markers=markers)
 
 @app.route('/locations/<world>')
 def location_markers(world):
